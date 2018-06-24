@@ -5,10 +5,10 @@ import (
 	"math"
 	"os"
 	"bufio"
-    "vector"
+	"github.com/madshov/raytracer/vector"
 )
 
-func render(shapes []raytracer.Shape, lights []raytracer.Light) {
+func render(shapes []Shape, lights []Light) {
 	width := 640
 	height := 480
 
@@ -38,18 +38,18 @@ func render(shapes []raytracer.Shape, lights []raytracer.Light) {
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
 			xx = (2 * ((float64(x) + 0.5) * invWidth) - 1) * angle * aspectRatio
-      yy = (1 - 2 * ((float64(y) + 0.5) * invHeight)) * angle
+      		yy = (1 - 2 * ((float64(y) + 0.5) * invHeight)) * angle
 
 			rayDirection := vector.NewVector3d(xx, yy, -1)
 			rayDirection.Normalized();
 
-			ray := raytracer.Ray{
-				Origo: vector.Vector3d{0.0, 0.0, 0.0},
+			ray := Ray{
+				Origo: vector.Vector3d{X:0.0, Y:0.0, Z:0.0},
 				Direction: *rayDirection,
 			}
 
 			// Trace ray.
-			color := ray.Trace(shapes, lights, 0, false)
+			color := ray.Trace(shapes, lights, 0)
 			// Create string of colors (RGB), and write string to bufer.
 			bufferedWriter.WriteString(fmt.Sprintf("%d %d %d ", int(math.Min(1, color.X) * 255), int(math.Min(1, color.Y) * 255), int(math.Min(1, color.Z) * 255)))
 		}
@@ -60,30 +60,37 @@ func render(shapes []raytracer.Shape, lights []raytracer.Light) {
 }
 
 func main() {
-	var shapes = make([]raytracer.Shape, 1, 1)
+	var shapes = make([]Shape, 3)
 
 	//for _ := range shapes {
-     shapes[0] = &raytracer.Sphere{
+     shapes[0] = &Sphere{
 			 Radius: 3,
-			 Center: vector.Vector3d{-0, -0, -20.0},
-			 SurfaceColor: vector.Vector3d{1.00, 0.32, 0.36},
-			 Reflection: true,
-			 Transparency: 0.0,
+			 Center: vector.Vector3d{X:-0, Y:-0, Z:-20.0},
+			 SurfaceColor: vector.Vector3d{X:1.00, Y:0.32, Z:0.36},
+			 Reflection: false,
+			 Transparency: 0,
 		 }
-//		 shapes[1] = &raytracer.Sphere{
-//			 Radius: 1,
-//			 Center: vector.Vector3d{ 0.5, 1.5, -30.0},
-//			 SurfaceColor: vector.Vector3d{0.0, 0.0, 1.0},
-//			 Reflection: false,
-//			 Transparency: 0.0,
-//			 }
+		 shapes[1] = &Sphere{
+			 Radius: 5,
+			 Center: vector.Vector3d{X:2.5, Y:2.5, Z:-30.0},
+			 SurfaceColor: vector.Vector3d{X:0.0, Y:0.4, Z:1.0},
+			 Reflection: false,
+			 Transparency: 0.0,
+			 }
+		shapes[2] = &Sphere{
+				Radius: 0.3,
+				Center: vector.Vector3d{X:1, Y:0.3, Z:-5.0},
+				SurfaceColor: vector.Vector3d{X:0.40, Y:0.32, Z:0.36},
+				Reflection: false,
+				Transparency: 0,
+			}
 	//}
 
-	var lights = make([]raytracer.Light, 1, 1)
+	var lights = make([]Light, 1, 1)
 
-	lights[0] = raytracer.Light{
-		Center: vector.Vector3d{10.0, 10.0, 10.0},
-		EmissionColor: vector.Vector3d{1.0, 1.0, 1.0},
+	lights[0] = Light{
+		Center: vector.Vector3d{X:20.0, Y:30.0, Z:10.0},
+		EmissionColor: vector.Vector3d{X:1.0, Y:1.0, Z:1.0},
 	}
 
 	render(shapes, lights)

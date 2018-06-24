@@ -3,7 +3,7 @@ package main
 import (
   "fmt"
   "math"
-  "vector"
+  "github.com/madshov/raytracer/vector"
 )
 
 type Sphere struct {

@@ -1,7 +1,7 @@
 package main
 
 import (
-  "vector"
+  "github.com/madshov/raytracer/vector"
 )
 
 type Shape interface {

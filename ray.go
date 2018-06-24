@@ -1,10 +1,10 @@
 package main
 
 import (
-  "fmt"
-  "strconv"
+  //"fmt"
+  //"strconv"
   "math"
-  "vector"
+  "github.com/madshov/raytracer/vector"
 )
 
 type Ray struct {
@@ -12,14 +12,12 @@ type Ray struct {
 	Direction vector.Vector3d
 }
 
-func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int, isr bool) (*vector.Vector3d) {
-  fmt.Printf("%#v\n", ray)
-  if (isr) {
-    fmt.Printf(strconv.Itoa(depth) + "Reflection = ")
-  }
-	tnear := math.Inf(0)
-	var sphere Shape
-t0, t1 := 0.0,0.0
+func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) (*vector.Vector3d) {
+  tnear := math.Inf(0)
+  
+  var sphere Shape
+  t0, t1 :=  math.Inf(0), math.Inf(0)
+
 	for _, shape := range shapes {
     // Calculate intersection parameters.
 		t0, t1 = shape.Intersect(ray)
@@ -35,16 +33,6 @@ t0, t1 := 0.0,0.0
 		}
 	}
 
-
-  if depth > 0 && !math.IsInf(tnear, 0) {
-    //fmt.Printf("her")
-    fmt.Printf("%f %f\n", t0, t1)
-    //fmt.Printf("%#v\n", ray)
-    //  return vector.NewVector3d(0, 1.0, 1.0)
-  } else {
-    fmt.Printf("\n")
-  }
-
   // If no object found, return background color.
 	if math.IsInf(tnear, 0) {
 		return vector.NewVector3d(1.0, 1.0, 1.0)
@@ -56,7 +44,7 @@ t0, t1 := 0.0,0.0
 	normalHitPoint := sphere.GetNormalVector(hitPoint)
 	// Normalize normal
 	normalHitPoint.Normalized()
-fmt.Printf("Normal: %#v\n", normalHitPoint)
+//fmt.Printf("Normal: %#v\n", normalHitPoint)
 	inside := false
 
 	if ray.Direction.Dot(normalHitPoint) > 0 {
@@ -82,7 +70,7 @@ fmt.Printf("Normal: %#v\n", normalHitPoint)
 				Direction: *reflectionDirection,
 			}
 
-      reflectionColor := reflection.Trace(shapes, lights, depth + 1, true)
+      reflectionColor := reflection.Trace(shapes, lights, depth + 1)
       refractionColor := vector.NewZeroVector3d()
 
       if sphere.hasTransparency() > 0.0 {
@@ -103,7 +91,7 @@ fmt.Printf("Normal: %#v\n", normalHitPoint)
   				Direction: *refractionDirection,
   			}
 
-        refractionColor = refraction.Trace(shapes, lights, depth + 1, true)
+        refractionColor = refraction.Trace(shapes, lights, depth + 1)
       }
 
       v := reflectionColor.Multiplied(fresnelEffect)
