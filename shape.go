@@ -1,10 +1,10 @@
 package main
 
 import (
-  "github.com/madshov/raytracer/vector"
+  "github.com/madshov/data-structures/vector"
 )
 
-type Shape interface {
+type Object interface {
   Intersect(*Ray) (float64, float64)
   GetNormalVector(*vector.Vector3d) (*vector.Vector3d)
   GetSurfaceColor() (*vector.Vector3d)

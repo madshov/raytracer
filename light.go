@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/madshov/raytracer/vector"
+  "github.com/madshov/data-structures/vector"
 )
 
 type Light struct {

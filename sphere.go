@@ -3,7 +3,7 @@ package main
 import (
   "fmt"
   "math"
-  "github.com/madshov/raytracer/vector"
+  "github.com/madshov/data-structures/vector"
 )
 
 type Sphere struct {
@@ -14,6 +14,7 @@ type Sphere struct {
   Transparency float64
 }
 
+// Intersect determines whether a given ray intersect the object.
 func (sphere *Sphere) Intersect(ray *Ray) (float64, float64) {
   L := ray.Origo.Subtract(&sphere.Center)
   a := ray.Direction.Dot(&ray.Direction)

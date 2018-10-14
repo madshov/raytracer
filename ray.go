@@ -4,7 +4,7 @@ import (
   //"fmt"
   //"strconv"
   "math"
-  "github.com/madshov/raytracer/vector"
+  "github.com/madshov/data-structures/vector"
 )
 
 type Ray struct {
@@ -12,10 +12,10 @@ type Ray struct {
 	Direction vector.Vector3d
 }
 
-func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) (*vector.Vector3d) {
+func (ray *Ray) Trace(shapes []Object, lights []Light, depth int) (*vector.Vector3d) {
   tnear := math.Inf(0)
   
-  var sphere Shape
+  var sphere Object
   t0, t1 :=  math.Inf(0), math.Inf(0)
 
 	for _, shape := range shapes {
