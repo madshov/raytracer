@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
 	"os"
-	"bufio"
+
 	"github.com/madshov/data-structures/vector"
 )
 
@@ -29,26 +30,26 @@ func render(objects []Object, lights []Light) {
 		panic(error)
 	}
 
- 	// Create a buffered writer from the file.
+	// Create a buffered writer from the file.
 	bufferedWriter := bufio.NewWriter(file)
 
 	// Write header string to buffer.
-	bufferedWriter.WriteString(fmt.Sprintf("P3\n %d %d\n255\n", width, height));
+	bufferedWriter.WriteString(fmt.Sprintf("P3\n %d %d\n255\n", width, height))
 
 	// For each pixel in canvas.
 	for y := 0; y < height; y++ {
 		for x := 0; x < width; x++ {
-			xx = (2 * ((float64(x) + 0.5) * invWidth) - 1) * angle * aspectRatio
-      		yy = (1 - 2 * ((float64(y) + 0.5) * invHeight)) * angle
+			xx = (2*((float64(x)+0.5)*invWidth) - 1) * angle * aspectRatio
+			yy = (1 - 2*((float64(y)+0.5)*invHeight)) * angle
 
 			rayDirection := vector.NewVector3d(xx, yy, -1)
-			rayDirection.Normalized();
+			rayDirection.Normalized()
 
 			// Create ray vector.
 			ray := Ray{
 				Origo: vector.Vector3d{
-					X: 0.0, 
-					Y: 0.0, 
+					X: 0.0,
+					Y: 0.0,
 					Z: 0.0,
 				},
 				Direction: *rayDirection,
@@ -56,10 +57,10 @@ func render(objects []Object, lights []Light) {
 			// Trace ray vector.
 			color := ray.Trace(objects, lights, 0)
 			// Create string of colors (RGB), and write string to bufer.
-			bufferedWriter.WriteString(fmt.Sprintf("%d %d %d ", 
-				int(math.Min(1, color.X) * 255), 
-				int(math.Min(1, color.Y) * 255), 
-				int(math.Min(1, color.Z) * 255),
+			bufferedWriter.WriteString(fmt.Sprintf("%d %d %d ",
+				int(math.Min(1, color.X)*255),
+				int(math.Min(1, color.Y)*255),
+				int(math.Min(1, color.Z)*255),
 			))
 		}
 	}
@@ -72,25 +73,25 @@ func main() {
 	var objects = make([]Object, 3)
 
 	//for _ := range objects {
-    objects[0] = &Sphere{
-		Radius: 3,
-		Center: vector.Vector3d{X:-0, Y:-0, Z:-20.0},
-		SurfaceColor: vector.Vector3d{X:1.00, Y:0.32, Z:0.36},
-		Reflection: false,
+	objects[0] = &Sphere{
+		Radius:       3,
+		Center:       vector.Vector3d{X: -0, Y: -0, Z: -20.0},
+		SurfaceColor: vector.Vector3d{X: 1.00, Y: 0.32, Z: 0.36},
+		Reflection:   false,
 		Transparency: 0,
 	}
 	objects[1] = &Sphere{
-		Radius: 5,
-		Center: vector.Vector3d{X:2.5, Y:2.5, Z:-30.0},
-		SurfaceColor: vector.Vector3d{X:0.0, Y:0.4, Z:1.0},
-		Reflection: false,
+		Radius:       5,
+		Center:       vector.Vector3d{X: 2.5, Y: 2.5, Z: -30.0},
+		SurfaceColor: vector.Vector3d{X: 0.0, Y: 0.4, Z: 1.0},
+		Reflection:   false,
 		Transparency: 0.0,
 	}
 	objects[2] = &Sphere{
-		Radius: 0.3,
-		Center: vector.Vector3d{X:1, Y:0.3, Z:-5.0},
-		SurfaceColor: vector.Vector3d{X:0.40, Y:0.32, Z:0.36},
-		Reflection: false,
+		Radius:       0.3,
+		Center:       vector.Vector3d{X: 1, Y: 0.3, Z: -5.0},
+		SurfaceColor: vector.Vector3d{X: 0.40, Y: 0.32, Z: 0.36},
+		Reflection:   false,
 		Transparency: 0,
 	}
 	//}
@@ -98,8 +99,8 @@ func main() {
 	var lights = make([]Light, 1, 1)
 
 	lights[0] = Light{
-		Center: vector.Vector3d{X:20.0, Y:30.0, Z:10.0},
-		EmissionColor: vector.Vector3d{X:1.0, Y:1.0, Z:1.0},
+		Center:        vector.Vector3d{X: 20.0, Y: 30.0, Z: 10.0},
+		EmissionColor: vector.Vector3d{X: 1.0, Y: 1.0, Z: 1.0},
 	}
 
 	render(objects, lights)
