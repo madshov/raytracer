@@ -59,7 +59,7 @@ func render(objects []Object, lights []Light) {
 			bufferedWriter.WriteString(fmt.Sprintf("%d %d %d ", 
 				int(math.Min(1, color.X) * 255), 
 				int(math.Min(1, color.Y) * 255), 
-				int(math.Min(1, color.Z) * 255)
+				int(math.Min(1, color.Z) * 255),
 			))
 		}
 	}
