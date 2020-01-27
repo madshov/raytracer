@@ -1,26 +1,27 @@
 package main
 
 import (
-	"fmt"
 	"math"
 
-	"github.com/madshov/data-structures/vector"
+	v "github.com/madshov/data-structures/vector"
 )
 
-type Sphere struct {
-	Radius       float64
-	Center       vector.Vector3d
-	SurfaceColor vector.Vector3d
-	Reflection   bool
-	Transparency float64
+type Sphere interface {
+	Shape
+}
+
+type sphere struct {
+	Radius float64
+	Center v.Vector3d
+	shape
 }
 
 // Intersect determines whether a given ray intersect the object.
-func (sphere *Sphere) Intersect(ray *Ray) (float64, float64) {
-	L := ray.Origo.Subtract(&sphere.Center)
+func (s *sphere) Intersect(ray *Ray) (float64, float64) {
+	l := ray.Origo.Subtract(&s.Center)
 	a := ray.Direction.Dot(&ray.Direction)
-	b := 2 * ray.Direction.Dot(L)
-	c := sphere.Center.Dot(&sphere.Center) + ray.Origo.Dot(&ray.Origo) + -2*sphere.Center.Dot(&ray.Origo) - math.Pow(sphere.Radius, 2)
+	b := 2 * ray.Direction.Dot(l)
+	c := s.Center.Dot(&s.Center) + ray.Origo.Dot(&ray.Origo) + -2*s.Center.Dot(&ray.Origo) - math.Pow(s.Radius, 2)
 
 	var t0, t1 float64
 	discr := b*b - 4*a*c
@@ -37,30 +38,12 @@ func (sphere *Sphere) Intersect(ray *Ray) (float64, float64) {
 	}
 
 	if t0 > t1 {
-		tmp := t0
-		t0 = t1
-		t1 = tmp
+		t0, t1 = t1, t0
 	}
 
 	return t0, t1
 }
 
-func (sphere *Sphere) GetNormalVector(point *vector.Vector3d) *vector.Vector3d {
-	return point.Subtract(&sphere.Center)
-}
-
-func (sphere *Sphere) GetSurfaceColor() *vector.Vector3d {
-	return &sphere.SurfaceColor
-}
-
-func (sphere *Sphere) IsReflective() bool {
-	return sphere.Reflection
-}
-
-func (sphere *Sphere) hasTransparency() float64 {
-	return sphere.Transparency
-}
-
-func (sphere Sphere) String() string {
-	return fmt.Sprintf("Radius: %f, Center: (%f,%f,%f)", sphere.Radius, sphere.Center.X, sphere.Center.Y, sphere.Center.Z)
+func (s *sphere) GetNormalVector(point *v.Vector3d) *v.Vector3d {
+	return point.Subtract(&s.Center)
 }

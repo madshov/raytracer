@@ -3,13 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"math"
 	"os"
 
-	"github.com/madshov/data-structures/vector"
+	v "github.com/madshov/data-structures/vector"
 )
 
-func render(objects []Object, lights []Light) {
+func render(objects []Shape, lights []Light, bw *bufio.Writer) {
 	width := 640
 	height := 480
 
@@ -22,19 +23,8 @@ func render(objects []Object, lights []Light) {
 
 	var xx, yy float64
 
-	//var buffer bytes.Buffer
-	file, error := os.Create("test.ppm")
-	defer file.Close()
-
-	if error != nil {
-		panic(error)
-	}
-
-	// Create a buffered writer from the file.
-	bufferedWriter := bufio.NewWriter(file)
-
 	// Write header string to buffer.
-	bufferedWriter.WriteString(fmt.Sprintf("P3\n %d %d\n255\n", width, height))
+	bw.WriteString(fmt.Sprintf("P3\n %d %d\n255\n", width, height))
 
 	// For each pixel in canvas.
 	for y := 0; y < height; y++ {
@@ -42,12 +32,12 @@ func render(objects []Object, lights []Light) {
 			xx = (2*((float64(x)+0.5)*invWidth) - 1) * angle * aspectRatio
 			yy = (1 - 2*((float64(y)+0.5)*invHeight)) * angle
 
-			rayDirection := vector.NewVector3d(xx, yy, -1)
+			rayDirection := v.NewVector3d(xx, yy, -1)
 			rayDirection.Normalized()
 
 			// Create ray vector.
 			ray := Ray{
-				Origo: vector.Vector3d{
+				Origo: v.Vector3d{
 					X: 0.0,
 					Y: 0.0,
 					Z: 0.0,
@@ -55,53 +45,67 @@ func render(objects []Object, lights []Light) {
 				Direction: *rayDirection,
 			}
 			// Trace ray vector.
-			color := ray.Trace(objects, lights, 0)
+			clr := ray.Trace(objects, lights, 0)
 			// Create string of colors (RGB), and write string to bufer.
-			bufferedWriter.WriteString(fmt.Sprintf("%d %d %d ",
-				int(math.Min(1, color.X)*255),
-				int(math.Min(1, color.Y)*255),
-				int(math.Min(1, color.Z)*255),
+			bw.WriteString(fmt.Sprintf("%d %d %d ",
+				int(math.Min(1, clr.X)*255),
+				int(math.Min(1, clr.Y)*255),
+				int(math.Min(1, clr.Z)*255),
 			))
 		}
 	}
 
 	// Write memory buffer to file.
-	bufferedWriter.Flush()
+	bw.Flush()
 }
 
 func main() {
-	var objects = make([]Object, 3)
+	var objects = make([]Shape, 3)
 
-	//for _ := range objects {
-	objects[0] = &Sphere{
-		Radius:       3,
-		Center:       vector.Vector3d{X: -0, Y: -0, Z: -20.0},
-		SurfaceColor: vector.Vector3d{X: 1.00, Y: 0.32, Z: 0.36},
-		Reflection:   false,
-		Transparency: 0,
+	objects[0] = &sphere{
+		3,
+		v.Vector3d{X: -0, Y: -0, Z: -20.0},
+		shape{
+			surfaceColor: v.Vector3d{X: 1.00, Y: 0.32, Z: 0.36},
+			isReflective: false,
+			transparence: 0,
+		},
 	}
-	objects[1] = &Sphere{
-		Radius:       5,
-		Center:       vector.Vector3d{X: 2.5, Y: 2.5, Z: -30.0},
-		SurfaceColor: vector.Vector3d{X: 0.0, Y: 0.4, Z: 1.0},
-		Reflection:   false,
-		Transparency: 0.0,
+	objects[1] = &sphere{
+		5,
+		v.Vector3d{X: 2.5, Y: 2.5, Z: -30.0},
+		shape{
+			surfaceColor: v.Vector3d{X: 0.0, Y: 0.4, Z: 1.0},
+			isReflective: false,
+			transparence: 0.0,
+		},
 	}
-	objects[2] = &Sphere{
-		Radius:       0.3,
-		Center:       vector.Vector3d{X: 1, Y: 0.3, Z: -5.0},
-		SurfaceColor: vector.Vector3d{X: 0.40, Y: 0.32, Z: 0.36},
-		Reflection:   false,
-		Transparency: 0,
+	objects[2] = &sphere{
+		0.3,
+		v.Vector3d{X: 1, Y: 0.3, Z: -5.0},
+		shape{
+			surfaceColor: v.Vector3d{X: 0.40, Y: 0.32, Z: 0.36},
+			isReflective: false,
+			transparence: 0,
+		},
 	}
-	//}
 
 	var lights = make([]Light, 1, 1)
 
 	lights[0] = Light{
-		Center:        vector.Vector3d{X: 20.0, Y: 30.0, Z: 10.0},
-		EmissionColor: vector.Vector3d{X: 1.0, Y: 1.0, Z: 1.0},
+		Center:        v.Vector3d{X: 20.0, Y: 30.0, Z: 10.0},
+		EmissionColor: v.Vector3d{X: 1.0, Y: 1.0, Z: 1.0},
 	}
 
-	render(objects, lights)
+	//var buffer bytes.Buffer
+	f, err := os.Create("./test.ppm")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	// Create a buffered writer from the file.
+	buffWriter := bufio.NewWriter(f)
+
+	render(objects, lights, buffWriter)
 }
