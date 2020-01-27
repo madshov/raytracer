@@ -38,39 +38,39 @@ func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *v.Vector3d {
 	}
 
 	// Find point of intersection
-	hitPoint := ray.Origo.Add(ray.Direction.Multiplied(tnear))
+	hitPnt := ray.Origo.Add(ray.Direction.Multiplied(tnear))
 	// Find normal at the intersection point
-	normalHitPoint := sh.GetNormalVector(hitPoint)
+	normalHitPnt := sh.GetNormalVector(hitPnt)
 	// Normalize normal
-	normalHitPoint.Normalized()
-	//fmt.Printf("Normal: %#v\n", normalHitPoint)
+	normalHitPnt.Normalized()
+	//fmt.Printf("Normal: %#v\n", normalHitPnt)
 	inside := false
 
-	if ray.Direction.Dot(normalHitPoint) > 0 {
-		normalHitPoint = normalHitPoint.Multiplied(-1)
+	if ray.Direction.Dot(normalHitPnt) > 0 {
+		normalHitPnt = normalHitPnt.Multiplied(-1)
 		inside = true
 	}
 
 	surfaceClr := v.NewZeroVector3d()
 
 	if (sh.IsReflective() || sh.Transparence() > 0.0) && depth < 5 {
-		facingRatio := -1 * ray.Direction.Dot(normalHitPoint)
+		facingRatio := -1 * ray.Direction.Dot(normalHitPnt)
 
 		// change the mix value to tweak the effect
-		fresnelEffect := 1*0.1 + math.Pow(1-facingRatio, 3)*(1-0.1)
+		fresnelEft := 1*0.1 + math.Pow(1-facingRatio, 3)*(1-0.1)
 
 		// -2aN + I where N is the normal vector to the sphere and intersection point. a is N dot product I, and I is the inverse of the direction of the incoming ray
-		//reflectionDirection := normalHitPoint.Multiplied(ray.Direction.Dot(normalHitPoint) * -2).Add(&ray.Direction)
-		reflecDir := ray.Direction.Subtract(normalHitPoint.Multiplied(2).Multiplied(ray.Direction.Dot(normalHitPoint)))
+		//reflectDir := normalHitPnt.Multiplied(ray.Direction.Dot(normalHitPnt) * -2).Add(&ray.Direction)
+		reflecDir := ray.Direction.Subtract(normalHitPnt.Multiplied(2).Multiplied(ray.Direction.Dot(normalHitPnt)))
 		reflecDir.Normalized()
 
 		reflec := Ray{
-			Origo:     *hitPoint.Add(normalHitPoint.Multiplied(1e-4)),
+			Origo:     *hitPnt.Add(normalHitPnt.Multiplied(1e-4)),
 			Direction: *reflecDir,
 		}
 
-		reflecClr := reflec.Trace(shapes, lights, depth+1)
-		refracClr := v.NewZeroVector3d()
+		reflectClr := reflec.Trace(shapes, lights, depth+1)
+		refractClr := v.NewZeroVector3d()
 
 		if sh.Transparence() > 0.0 {
 			eta := 1.1
@@ -79,34 +79,34 @@ func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *v.Vector3d {
 				eta = 1.0 / eta
 			}
 
-			cosi := normalHitPoint.Multiplied(-1).Dot(&ray.Direction)
+			cosi := normalHitPnt.Multiplied(-1).Dot(&ray.Direction)
 			k := 1.0 - eta*eta*(1.0-cosi*cosi)
 
-			refractionDirection := ray.Direction.Multiplied(eta).Add(normalHitPoint.Multiplied(eta*cosi - math.Sqrt(k)))
-			refractionDirection.Normalized()
+			refractDir := ray.Direction.Multiplied(eta).Add(normalHitPnt.Multiplied(eta*cosi - math.Sqrt(k)))
+			refractDir.Normalized()
 
-			refraction := Ray{
-				Origo:     *hitPoint.Subtract(normalHitPoint.Multiplied(1e-4)),
-				Direction: *refractionDirection,
+			refract := Ray{
+				Origo:     *hitPnt.Subtract(normalHitPnt.Multiplied(1e-4)),
+				Direction: *refractDir,
 			}
 
-			refracClr = refraction.Trace(shapes, lights, depth+1)
+			refractClr = refract.Trace(shapes, lights, depth+1)
 		}
 
-		v := reflecClr.Multiplied(fresnelEffect)
-		w := refracClr.Multiplied((1.0 - fresnelEffect) * sh.Transparence())
+		v := reflectClr.Multiplied(fresnelEft)
+		w := refractClr.Multiplied((1.0 - fresnelEft) * sh.Transparence())
 		//fmt.Printf("%#v\n", reflecClr)
 		surfaceClr = v.Add(w).Multiply(sh.GetSurfaceColor())
 	} else {
 		for _, light := range lights {
 			// Find light direction from intersection point
-			lightDirection := light.Center.Subtract(hitPoint)
+			lightDir := light.Center.Subtract(hitPnt)
 			// Normalize direction
-			lightDirection.Normalized()
+			lightDir.Normalized()
 
 			//transmission := v.NewVector3d(1.0, 1.0, 1.0)
 
-			surfaceClr = surfaceClr.Add(sh.GetSurfaceColor().Multiplied(math.Max(0.0, normalHitPoint.Dot(lightDirection))).Multiply(&light.EmissionColor))
+			surfaceClr = surfaceClr.Add(sh.GetSurfaceColor().Multiplied(math.Max(0.0, normalHitPnt.Dot(lightDir))).Multiply(&light.EmissionColor))
 		}
 	}
 
