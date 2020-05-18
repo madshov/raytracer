@@ -1,2 +1,10 @@
-github.com/madshov/data-structures v0.0.0-20180725140114-b87a149153d9 h1:ZJTxGqWvl3fjOdGMNGMt+y28dQbyrkRBbwHOV2epGtk=
-github.com/madshov/data-structures v0.0.0-20180725140114-b87a149153d9/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=
+github.com/madshov/data-structures v0.0.0-20200516114619-69134298a9d0 h1:s80BgTCaW10vBqz2a0pIiPbxpyoQw9uER5TBM6DrWUI=
+github.com/madshov/data-structures v0.0.0-20200516114619-69134298a9d0/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=
+github.com/madshov/data-structures v0.0.0-20200516172429-434f8e993211 h1:WpUGBew7lY2fCKAeokO0RiC/PkvW+v+nbnXtB/1QMS4=
+github.com/madshov/data-structures v0.0.0-20200516172429-434f8e993211/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=
+github.com/madshov/data-structures v0.0.0-20200516173049-2a1e7214e106 h1:CUTi4slG6ZKOrU+k2BW9Q+dt1dRUsofBvIxtxUrNsvw=
+github.com/madshov/data-structures v0.0.0-20200516173049-2a1e7214e106/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=
+github.com/madshov/data-structures v0.0.0-20200516181552-f3ef4a7833ee h1:cqPy14GtPCrtZLPBf/OrQZtq2VY7yaF1DuZqUKl+lpQ=
+github.com/madshov/data-structures v0.0.0-20200516181552-f3ef4a7833ee/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=
+github.com/madshov/data-structures v0.0.0-20200516182529-79b55bdb88af h1:g8L8owK4Hrtss3A/JeH+B23kLyRogwtl+97E4yff8LA=
+github.com/madshov/data-structures v0.0.0-20200516182529-79b55bdb88af/go.mod h1:o+Cps5CLGanI/5T7iQw/NotArCMXXwW0bpv12KvWBHs=

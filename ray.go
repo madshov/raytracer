@@ -3,29 +3,29 @@ package main
 import (
 	"math"
 
-	v "github.com/madshov/data-structures/vector"
+	vec "github.com/madshov/data-structures/algebraic"
 )
 
 type Ray struct {
-	Origo     v.Vector3d
-	Direction v.Vector3d
+	Origo vec.Vector
+	Dir   vec.Vector
 }
 
-func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *v.Vector3d {
+func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *vec.Vector {
 	tnear := math.Inf(0)
 
 	var sh Shape
 	t0, t1 := math.Inf(0), math.Inf(0)
 
 	for _, shape := range shapes {
-		// Calculate intersection parameters.
+		// calculate intersection parameters
 		t0, t1 = shape.Intersect(ray)
 
 		if t0 < 0 {
 			t0 = t1
 		}
 
-		// If object is closer than previous.
+		// if object is closer than previous
 		if t0 < tnear {
 			tnear = t0
 			sh = shape
@@ -34,43 +34,47 @@ func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *v.Vector3d {
 
 	// If no object found, return background color.
 	if math.IsInf(tnear, 0) {
-		return v.NewVector3d(1.0, 1.0, 1.0)
+		bgClr, _ := vec.NewVector(3, 2.0, 2.0, 2.0)
+		return bgClr
 	}
 
 	// Find point of intersection
-	hitPnt := ray.Origo.Add(ray.Direction.Multiplied(tnear))
+	intersectPnt := ray.Origo.Add(ray.Dir.Scale(tnear))
 	// Find normal at the intersection point
-	normalHitPnt := sh.GetNormalVector(hitPnt)
+	nIntersectPnt := sh.GetNormalVector(intersectPnt)
 	// Normalize normal
-	normalHitPnt.Normalized()
+	nIntersectPnt.Normalize()
 	//fmt.Printf("Normal: %#v\n", normalHitPnt)
 	inside := false
 
-	if ray.Direction.Dot(normalHitPnt) > 0 {
-		normalHitPnt = normalHitPnt.Multiplied(-1)
+	if ray.Dir.Dot(nIntersectPnt) > 0 {
+		nIntersectPnt = nIntersectPnt.Scale(-1)
 		inside = true
 	}
 
-	surfaceClr := v.NewZeroVector3d()
+	surfaceClr, _ := vec.NewZeroVector(3)
 
 	if (sh.IsReflective() || sh.Transparence() > 0.0) && depth < 5 {
-		facingRatio := -1 * ray.Direction.Dot(normalHitPnt)
+		facingRatio := -1 * ray.Dir.Dot(nIntersectPnt)
 
 		// change the mix value to tweak the effect
-		fresnelEft := 1*0.1 + math.Pow(1-facingRatio, 3)*(1-0.1)
+		a, b := 0.1, 1.0
+		fresnelEft := b*a + math.Pow(1-facingRatio, 3)*(1.0-a)
 
-		// -2aN + I where N is the normal vector to the sphere and intersection point. a is N dot product I, and I is the inverse of the direction of the incoming ray
-		//reflectDir := normalHitPnt.Multiplied(ray.Direction.Dot(normalHitPnt) * -2).Add(&ray.Direction)
-		reflecDir := ray.Direction.Subtract(normalHitPnt.Multiplied(2).Multiplied(ray.Direction.Dot(normalHitPnt)))
-		reflecDir.Normalized()
+		// -2aN + I where N is the normal vector to the sphere and intersection
+		// point
+		// a is N dot product I, and I is the inverse of the direction of the
+		// incoming ray
+		reflectDir := ray.Dir.Sub(nIntersectPnt.Scale(2).Scale(ray.Dir.Dot(nIntersectPnt)))
+		reflectDir.Normalize()
 
-		reflec := Ray{
-			Origo:     *hitPnt.Add(normalHitPnt.Multiplied(1e-4)),
-			Direction: *reflecDir,
+		reflect := Ray{
+			Origo: *(intersectPnt.Add(nIntersectPnt).Scale(1e-4)),
+			Dir:   *reflectDir,
 		}
 
-		reflectClr := reflec.Trace(shapes, lights, depth+1)
-		refractClr := v.NewZeroVector3d()
+		reflectClr := reflect.Trace(shapes, lights, depth+1)
+		refractClr, _ := vec.NewZeroVector(3)
 
 		if sh.Transparence() > 0.0 {
 			eta := 1.1
@@ -79,34 +83,44 @@ func (ray *Ray) Trace(shapes []Shape, lights []Light, depth int) *v.Vector3d {
 				eta = 1.0 / eta
 			}
 
-			cosi := normalHitPnt.Multiplied(-1).Dot(&ray.Direction)
-			k := 1.0 - eta*eta*(1.0-cosi*cosi)
+			cosi := -1 * (nIntersectPnt.Dot(&ray.Dir))
+			k := 1.0 - (eta * eta * (1.0 - cosi*cosi))
 
-			refractDir := ray.Direction.Multiplied(eta).Add(normalHitPnt.Multiplied(eta*cosi - math.Sqrt(k)))
-			refractDir.Normalized()
+			refractDir := ray.Dir.Scale(eta).Add(nIntersectPnt.Scale(eta*cosi - math.Sqrt(k)))
+			refractDir.Normalize()
 
 			refract := Ray{
-				Origo:     *hitPnt.Subtract(normalHitPnt.Multiplied(1e-4)),
-				Direction: *refractDir,
+				Origo: *(intersectPnt.Sub(nIntersectPnt).Scale(1e-4)),
+				Dir:   *refractDir,
 			}
 
 			refractClr = refract.Trace(shapes, lights, depth+1)
 		}
 
-		v := reflectClr.Multiplied(fresnelEft)
-		w := refractClr.Multiplied((1.0 - fresnelEft) * sh.Transparence())
-		//fmt.Printf("%#v\n", reflecClr)
-		surfaceClr = v.Add(w).Multiply(sh.GetSurfaceColor())
+		surfaceClr = reflectClr.Scale(fresnelEft).Add(refractClr.Scale((1.0 - fresnelEft) * sh.Transparence())).Mul(sh.GetSurfaceColor())
 	} else {
-		for _, light := range lights {
+		for _, l := range lights {
 			// Find light direction from intersection point
-			lightDir := light.Center.Subtract(hitPnt)
+			lightDir := l.Center.Sub(intersectPnt)
 			// Normalize direction
-			lightDir.Normalized()
+			lightDir.Normalize()
 
-			//transmission := v.NewVector3d(1.0, 1.0, 1.0)
+			transmission, _ := vec.NewVector(3, 1.0, 1.0, 1.0)
+			for _, shape := range shapes {
+				light := Ray{
+					Origo: *(intersectPnt.Add(nIntersectPnt).Scale(1e-4)),
+					Dir:   *lightDir,
+				}
 
-			surfaceClr = surfaceClr.Add(sh.GetSurfaceColor().Multiplied(math.Max(0.0, normalHitPnt.Dot(lightDir))).Multiply(&light.EmissionColor))
+				t0, _ := shape.Intersect(&light)
+				if math.IsInf(t0, 0) {
+					transmission, _ = vec.NewZeroVector(3)
+					break
+				}
+			}
+
+			max := math.Max(0.0, nIntersectPnt.Dot(lightDir))
+			surfaceClr = surfaceClr.Add(sh.GetSurfaceColor().Mul(transmission).Scale(max).Mul(&l.EmissionClr))
 		}
 	}
 

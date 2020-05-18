@@ -3,47 +3,53 @@ package main
 import (
 	"math"
 
-	v "github.com/madshov/data-structures/vector"
+	vec "github.com/madshov/data-structures/algebraic"
 )
-
-type Sphere interface {
-	Shape
-}
 
 type sphere struct {
 	Radius float64
-	Center v.Vector3d
+	Center vec.Vector
 	shape
 }
 
-// Intersect determines whether a given ray intersect the object.
+// Intersect determines whether a given ray intersect the object, and returns
+// two intersections. Both can be infinity which means no intersection.
 func (s *sphere) Intersect(ray *Ray) (float64, float64) {
-	l := ray.Origo.Subtract(&s.Center)
-	a := ray.Direction.Dot(&ray.Direction)
-	b := 2 * ray.Direction.Dot(l)
-	c := s.Center.Dot(&s.Center) + ray.Origo.Dot(&ray.Origo) + -2*s.Center.Dot(&ray.Origo) - math.Pow(s.Radius, 2)
+	// find vector from sphere center and ray origo,
+	// and project it onto ray to get length
+	l := s.Center.Sub(&ray.Origo)
+	a := l.Dot(&ray.Dir)
 
-	var t0, t1 float64
-	discr := b*b - 4*a*c
-
-	if discr < 0 {
+	var (
 		t0 = math.Inf(0)
-		t1 = t0
-	} else if discr == 0 {
-		t0 = -b / (2 * a)
-		t1 = t0
-	} else {
-		t0 = (-b - math.Sqrt(discr)) / (2 * a)
-		t1 = (-b + math.Sqrt(discr)) / (2 * a)
+		t1 = math.Inf(0)
+	)
+
+	// if length from origo to projection point is
+	// negative, ray does not intersect
+	if a < 0 {
+		return t0, t1
 	}
 
-	if t0 > t1 {
-		t0, t1 = t1, t0
+	// find length between sphere center and ray
+	d := math.Sqrt(l.Dot(l) - math.Pow(a, 2))
+
+	// if length is greater than squared radius,
+	// ray does not intersect
+	if d > s.Radius {
+		return t0, t1
 	}
+
+	// find intersection(s)
+	b := math.Sqrt(math.Pow(s.Radius, 2) - math.Pow(d, 2))
+
+	t0, t1 = a-b, a+b
 
 	return t0, t1
 }
 
-func (s *sphere) GetNormalVector(point *v.Vector3d) *v.Vector3d {
-	return point.Subtract(&s.Center)
+// GetNormalVector returns the normal vector of the sphere for a given point in
+// space.
+func (s *sphere) GetNormalVector(point *vec.Vector) *vec.Vector {
+	return point.Sub(&s.Center)
 }

@@ -1,10 +1,10 @@
 package main
 
 import (
-	v "github.com/madshov/data-structures/vector"
+	vec "github.com/madshov/data-structures/algebraic"
 )
 
 type Light struct {
-	Center        v.Vector3d
-	EmissionColor v.Vector3d
+	Center      vec.Vector
+	EmissionClr vec.Vector
 }

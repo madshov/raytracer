@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	v "github.com/madshov/data-structures/vector"
+	vec "github.com/madshov/data-structures/algebraic"
 )
 
 func render(objects []Shape, lights []Light, bw *bufio.Writer) {
@@ -32,25 +32,30 @@ func render(objects []Shape, lights []Light, bw *bufio.Writer) {
 			xx = (2*((float64(x)+0.5)*invWidth) - 1) * angle * aspectRatio
 			yy = (1 - 2*((float64(y)+0.5)*invHeight)) * angle
 
-			rayDirection := v.NewVector3d(xx, yy, -1)
-			rayDirection.Normalized()
+			rayDir, err := vec.NewVector(3, xx, yy, -1)
+			if err != nil {
+				log.Fatal("cannot create ray vector")
+			}
+			rayDir.Normalize()
 
 			// Create ray vector.
+			origo, err := vec.NewZeroVector(3)
+			if err != nil {
+				log.Fatal("cannot create origo vector")
+			}
+
 			ray := Ray{
-				Origo: v.Vector3d{
-					X: 0.0,
-					Y: 0.0,
-					Z: 0.0,
-				},
-				Direction: *rayDirection,
+				Origo: *origo,
+				Dir:   *rayDir,
 			}
 			// Trace ray vector.
 			clr := ray.Trace(objects, lights, 0)
+
 			// Create string of colors (RGB), and write string to bufer.
 			bw.WriteString(fmt.Sprintf("%d %d %d ",
-				int(math.Min(1, clr.X)*255),
-				int(math.Min(1, clr.Y)*255),
-				int(math.Min(1, clr.Z)*255),
+				int(math.Min(1, clr.GetCoord(0))*255),
+				int(math.Min(1, clr.GetCoord(1))*255),
+				int(math.Min(1, clr.GetCoord(2))*255),
 			))
 		}
 	}
@@ -60,41 +65,54 @@ func render(objects []Shape, lights []Light, bw *bufio.Writer) {
 }
 
 func main() {
-	var objects = make([]Shape, 3)
+	var objects []Shape
 
-	objects[0] = &sphere{
-		3,
-		v.Vector3d{X: -0, Y: -0, Z: -20.0},
+	v0, _ := vec.NewVector(3, -3.0, 0.0, -20.0)
+	c0, _ := vec.NewVector(3, 1.00, 0.32, 0.36)
+
+	objects = append(objects, &sphere{
+		4,
+		*v0,
 		shape{
-			surfaceColor: v.Vector3d{X: 1.00, Y: 0.32, Z: 0.36},
-			isReflective: false,
-			transparence: 0,
+			surfaceColor: *c0,
+			isReflective: true,
+			transparence: 0.9,
 		},
-	}
-	objects[1] = &sphere{
-		5,
-		v.Vector3d{X: 2.5, Y: 2.5, Z: -30.0},
+	})
+
+	v1, _ := vec.NewVector(3, 2.5, 0.0, -25.0)
+	c1, _ := vec.NewVector(3, 0.65, 0.77, 0.97)
+
+	objects = append(objects, &sphere{
+		3,
+		*v1,
 		shape{
-			surfaceColor: v.Vector3d{X: 0.0, Y: 0.4, Z: 1.0},
-			isReflective: false,
+			surfaceColor: *c1,
+			isReflective: true,
 			transparence: 0.0,
 		},
-	}
-	objects[2] = &sphere{
-		0.3,
-		v.Vector3d{X: 1, Y: 0.3, Z: -5.0},
+	})
+
+	v2, _ := vec.NewVector(3, 4.0, -1.0, -15.0)
+	c2, _ := vec.NewVector(3, 0.90, 0.76, 0.46)
+	objects = append(objects, &sphere{
+		2,
+		*v2,
 		shape{
-			surfaceColor: v.Vector3d{X: 0.40, Y: 0.32, Z: 0.36},
-			isReflective: false,
+			surfaceColor: *c2,
+			isReflective: true,
 			transparence: 0,
 		},
-	}
+	})
 
 	var lights = make([]Light, 1, 1)
 
+	l0, _ := vec.NewVector(3, 0.0, 20.0, -30.0)
+	ec0, _ := vec.NewVector(3, 3.0, 3.0, 3.0)
+
 	lights[0] = Light{
-		Center:        v.Vector3d{X: 20.0, Y: 30.0, Z: 10.0},
-		EmissionColor: v.Vector3d{X: 1.0, Y: 1.0, Z: 1.0},
+		Center:      *l0,
+		EmissionClr: *ec0,
 	}
 
 	//var buffer bytes.Buffer

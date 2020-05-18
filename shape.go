@@ -1,24 +1,24 @@
 package main
 
 import (
-	v "github.com/madshov/data-structures/vector"
+	vec "github.com/madshov/data-structures/algebraic"
 )
 
 type Shape interface {
 	Intersect(*Ray) (float64, float64)
-	GetNormalVector(*v.Vector3d) *v.Vector3d
-	GetSurfaceColor() *v.Vector3d
+	GetNormalVector(*vec.Vector) *vec.Vector
+	GetSurfaceColor() *vec.Vector
 	IsReflective() bool
 	Transparence() float64
 }
 
 type shape struct {
-	surfaceColor v.Vector3d
+	surfaceColor vec.Vector
 	isReflective bool
 	transparence float64
 }
 
-func (s *shape) GetSurfaceColor() *v.Vector3d {
+func (s *shape) GetSurfaceColor() *vec.Vector {
 	return &s.surfaceColor
 }
 
