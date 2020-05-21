@@ -5,6 +5,6 @@ import (
 )
 
 type Light struct {
-	Center      vec.Vector
-	EmissionClr vec.Vector
+	Center        vec.Vector
+	EmissionColor vec.Vector
 }

@@ -10,7 +10,7 @@ import (
 	vec "github.com/madshov/data-structures/algebraic"
 )
 
-func render(objects []Shape, lights []Light, bw *bufio.Writer) {
+func render(objects []Object, lights []Light, bw *bufio.Writer) {
 	width := 640
 	height := 480
 
@@ -65,58 +65,58 @@ func render(objects []Shape, lights []Light, bw *bufio.Writer) {
 }
 
 func main() {
-	var objects []Shape
+	var (
+		objects []Object
+		lights  []Light
+	)
 
-	v0, _ := vec.NewVector(3, -3.0, 0.0, -20.0)
+	v0, _ := vec.NewVector(3, 0.0, 0.0, -20.0)
 	c0, _ := vec.NewVector(3, 1.00, 0.32, 0.36)
 
 	objects = append(objects, &sphere{
 		4,
 		*v0,
-		shape{
+		object{
 			surfaceColor: *c0,
 			isReflective: true,
-			transparence: 0.9,
+			transparence: 0.5,
 		},
 	})
 
-	v1, _ := vec.NewVector(3, 2.5, 0.0, -25.0)
+	v1, _ := vec.NewVector(3, 5.0, 0.0, -25.0)
 	c1, _ := vec.NewVector(3, 0.65, 0.77, 0.97)
 
 	objects = append(objects, &sphere{
 		3,
 		*v1,
-		shape{
+		object{
 			surfaceColor: *c1,
 			isReflective: true,
 			transparence: 0.0,
 		},
 	})
 
-	v2, _ := vec.NewVector(3, 4.0, -1.0, -15.0)
+	v2, _ := vec.NewVector(3, 5.0, -1.0, -15.0)
 	c2, _ := vec.NewVector(3, 0.90, 0.76, 0.46)
 	objects = append(objects, &sphere{
 		2,
 		*v2,
-		shape{
+		object{
 			surfaceColor: *c2,
 			isReflective: true,
 			transparence: 0,
 		},
 	})
 
-	var lights = make([]Light, 1, 1)
-
 	l0, _ := vec.NewVector(3, 0.0, 20.0, -30.0)
 	ec0, _ := vec.NewVector(3, 3.0, 3.0, 3.0)
 
-	lights[0] = Light{
-		Center:      *l0,
-		EmissionClr: *ec0,
-	}
+	lights = append(lights, Light{
+		Center:        *l0,
+		EmissionColor: *ec0,
+	})
 
-	//var buffer bytes.Buffer
-	f, err := os.Create("./test.ppm")
+	f, err := os.Create("./scene.ppm")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,7 +4,7 @@ import (
 	vec "github.com/madshov/data-structures/algebraic"
 )
 
-type Shape interface {
+type Object interface {
 	Intersect(*Ray) (float64, float64)
 	GetNormalVector(*vec.Vector) *vec.Vector
 	GetSurfaceColor() *vec.Vector
@@ -12,20 +12,20 @@ type Shape interface {
 	Transparence() float64
 }
 
-type shape struct {
+type object struct {
 	surfaceColor vec.Vector
 	isReflective bool
 	transparence float64
 }
 
-func (s *shape) GetSurfaceColor() *vec.Vector {
-	return &s.surfaceColor
+func (o *object) GetSurfaceColor() *vec.Vector {
+	return &o.surfaceColor
 }
 
-func (s *shape) IsReflective() bool {
-	return s.isReflective
+func (o *object) IsReflective() bool {
+	return o.isReflective
 }
 
-func (s *shape) Transparence() float64 {
-	return s.transparence
+func (o *object) Transparence() float64 {
+	return o.transparence
 }

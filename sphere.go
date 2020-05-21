@@ -9,7 +9,7 @@ import (
 type sphere struct {
 	Radius float64
 	Center vec.Vector
-	shape
+	object
 }
 
 // Intersect determines whether a given ray intersect the object, and returns
